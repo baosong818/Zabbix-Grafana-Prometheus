@@ -1,0 +1,72 @@
+version: '3'
+services:
+  zabbix-mysql:
+    image: mysql:5.7
+    container_name: zabbix-mysql
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+    volumes:
+      - ./zabbix_mysql_data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime
+
+  zabbix-web-apache-mysql:
+    image: zabbix/zabbix-web-apache-mysql
+    container_name: zabbix-apache
+    restart: always
+    environment:
+      DB_SERVER_HOST: zabbix-mysql
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      ZBX_SERVER_HOST: zabbix-server
+      PHP_TZ: Asia/Shanghai
+    ports:
+      - '80:80'
+    external_links:
+      - zabbix-mysql:zabbix-mysql
+      - zabbix-server:zabbix-server
+    depends_on:
+      - zabbix-mysql
+      - zabbix-server
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./fonts:/usr/share/zabbix/assets/fonts
+#     上传windows的简体，并重命名为DejaVuSans.ttf
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql
+    container_name: zabbix-server
+    restart: always
+    environment:
+      DB_SERVER_HOST: zabbix-mysql
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+    external_links:
+      - zabbix-mysql:zabbix-mysql
+      - zabbix-agent:zabbix-agent
+    depends_on:
+      - zabbix-mysql
+      - zabbix-agent
+    ports:
+      - '10051:10051'
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./zabbix:/usr/lib/zabbix
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent
+    container_name: zabbix-agent
+    restart: always
+    environment:
+      ZBX_HOSTNAME: zabbix server
+      ZBX_SERVER_HOST: zabbix-server
+    ports:
+      - '10050:10050'
+    volumes:
+      - /etc/localtime:/etc/localtime

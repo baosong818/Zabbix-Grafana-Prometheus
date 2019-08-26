@@ -1,0 +1,13 @@
+version: '3'
+services:
+  zabbix-agent:
+    image: zabbix/zabbix-agent
+    container_name: zabbix-agent
+    restart: always
+    environment:
+      ZBX_HOSTNAME: zabbix server
+      ZBX_SERVER_HOST: 10.10.10.101
+    ports:
+      - '10050:10050'
+    volumes:
+      - /etc/localtime:/etc/localtime
