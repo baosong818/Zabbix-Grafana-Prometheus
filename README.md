@@ -19,3 +19,8 @@
         └── fonts
             └── DejaVuSans.ttf
 ```
+
+注意
+```
+Zabbix server的agent监控接口使用DNS方法zabbix-agent: 10050，否则报错哦
+```
